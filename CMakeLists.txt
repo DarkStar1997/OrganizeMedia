@@ -8,6 +8,7 @@ endif()
 
 if(MSVC)
     MESSAGE("Compiler is MSVC. Sad")
+    set(CMAKE_CXX_FLAGS "/MT")
 else()
     MESSAGE("Compiler isn't MSVC. Good for you")
     set(CMAKE_CXX_FLAGS "-static")
