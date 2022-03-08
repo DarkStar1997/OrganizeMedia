@@ -23,8 +23,8 @@ jobs:
 
     - name: prepare
       run: |
-        sudo apt update
-        sudo apt install ninja
+        sudo apt update -y
+        sudo apt install -y ninja
 
     - name: configure
       run: |
