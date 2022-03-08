@@ -37,6 +37,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(argh)
 
+FetchContent_Declare(
+    nlohmann
+    GIT_REPOSITORY "https://github.com/nlohmann/json"
+    GIT_TAG 700b95f4473cac1d900b807541daad0ca3d98f52
+    GIT_PROGRESS TRUE
+)
+FetchContent_Populate(nlohmann)
+include_directories(${nlohmann_SOURCE_DIR}/include)
+
 set(SOURCES
     main.cpp
     )

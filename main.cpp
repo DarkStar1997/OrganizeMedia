@@ -1,12 +1,11 @@
-#include <algorithm>
-#include <cstdlib>
 #include <fmt/core.h>
 #include <filesystem>
 #include <chrono>
 #include <string>
 #include <argh.h>
-#include <iostream>
 #include <vector>
+#include <nlohmann/json.hpp>
+#include <fstream>
 
 std::vector<std::string> weekday = {"sun", "mon", "tue", "wed", "thur", "fri", "sat"};
 std::vector<std::string> month = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"};
@@ -19,37 +18,22 @@ std::filesystem::path get_output_dir(std::filesystem::file_time_type const& ftim
     return output_path / std::to_string(1900 + timestamp->tm_year) / month[timestamp->tm_mon] / std::to_string(timestamp->tm_mday);
 }
 
-int main(int argc, char **argv)
+int main()
 {
-    std::string help_text = "Usage:\n"
-                            "./rmg_organize --input [input dir name] --output [output dir name]\n";
-    argh::parser cmdl;
-    cmdl.parse(argc, argv, argh::parser::Mode::PREFER_PARAM_FOR_UNREG_OPTION);
-    if(cmdl["help"])
+    std::string config_file_name = "rmg_config.json";
+    if(!std::filesystem::exists(config_file_name))
     {
-        fmt::print("{}\n", help_text);
+        fmt::print("{} not present\n", config_file_name);
         exit(0);
     }
-    std::string input, output;
-    
-    if(!(cmdl({"i", "input"}) >> input))
-        fmt::print("Provide input directory with -i or --input\n");
-    else
+    nlohmann::json config_data;
     {
-        if(!std::filesystem::exists(input))
-        {
-            fmt::print("Input directory {} not present\n", input);
-            exit(0);
-        }
-        fmt::print("Input directory set to {}\n", input);
+        std::ifstream input_config; input_config.open(config_file_name);
+        input_config >> config_data;
     }
-    
-    if(!(cmdl({"o", "output"}) >> output))
-        fmt::print("Provide output directory with -o or --output\n");
-    else
-        fmt::print("Output directory set to {}\n", output);
-
-    std::vector<std::string> extensions = {".json", ".cpp", ".cache"};
+    std::string input = config_data["input_dir"];
+    std::string output = config_data["output_dir"];
+    std::vector<std::string> extensions = config_data["extensions"];
     size_t count = 0, duplicates = 0;
 
     for(const auto& dir_entry : std::filesystem::recursive_directory_iterator(input))

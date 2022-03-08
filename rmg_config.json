@@ -1,0 +1,5 @@
+{
+    "input_dir": "/home/rohan/PlayerVisualization",
+    "output_dir": "roha",
+    "extensions": [".cpp", ".json", ".txt"]
+}
