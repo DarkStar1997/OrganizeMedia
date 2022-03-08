@@ -24,7 +24,7 @@ jobs:
     - name: prepare
       run: |
         sudo apt update -y
-        sudo apt install -y ninja
+        sudo apt install -y ninja-build
 
     - name: configure
       run: |
