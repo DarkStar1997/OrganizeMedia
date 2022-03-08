@@ -13,7 +13,8 @@ on:
       paths:
       - '**'
       - '.github/workflows/linux-test.yml'
-
+  workflow_dispatch:
+  
 jobs:
   test-linux:
     runs-on: ubuntu-latest
