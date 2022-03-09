@@ -40,7 +40,7 @@ int main()
         if(std::find(extensions.begin(), extensions.end(), dir_entry.path().extension()) != extensions.end())
         {
             struct stat result;
-            if(stat(dir_entry.path().c_str(), &result) == 0)
+            if(stat((const char*)dir_entry.path().c_str(), &result) == 0)
             {
                 auto output_path = get_output_dir(&result, std::filesystem::path(output));
                 if(!std::filesystem::exists(output_path))
