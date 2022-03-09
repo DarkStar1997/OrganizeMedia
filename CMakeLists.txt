@@ -14,7 +14,7 @@ else()
     set(CMAKE_CXX_FLAGS "-static")
 endif()
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 set(CMAKE_BUILD_TYPE "RELEASE")
 
@@ -28,14 +28,6 @@ FetchContent_Declare(
     GIT_PROGRESS TRUE
 )
 FetchContent_MakeAvailable(fmtlib)
-
-FetchContent_Declare(
-    argh
-    GIT_REPOSITORY "https://github.com/adishavit/argh"
-    GIT_TAG 01b6a4a3b0991dc2f29e4ab55eb7da90c8189f80
-    GIT_PROGRESS TRUE
-)
-FetchContent_MakeAvailable(argh)
 
 FetchContent_Declare(
     nlohmann
@@ -53,4 +45,3 @@ set(SOURCES
 set(EXE_NAME "rmg_organize")
 add_executable(${EXE_NAME} ${SOURCES})
 target_link_libraries(${EXE_NAME} fmt::fmt)
-target_include_directories(${EXE_NAME} PRIVATE ${argh_SOURCE_DIR})
