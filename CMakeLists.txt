@@ -38,6 +38,15 @@ FetchContent_Declare(
 FetchContent_Populate(nlohmann)
 include_directories(${nlohmann_SOURCE_DIR}/include)
 
+FetchContent_Declare(
+    hash
+    GIT_REPOSITORY "https://github.com/Chocobo1/Hash"
+    GIT_TAG 8ccfa5b92425be9bc7942c21743eeb7d9e188834
+    GIT_PROGRESS TRUE
+)
+FetchContent_Populate(hash)
+include_directories(${hash_SOURCE_DIR}/src)
+
 set(SOURCES
     main.cpp
     )
