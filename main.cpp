@@ -1,12 +1,15 @@
 #include <fmt/core.h>
 #include <filesystem>
 #include <chrono>
+#include <iterator>
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sstream>
+#include <exception>
 
 std::vector<std::string> weekday = {"sun", "mon", "tue", "wed", "thur", "fri", "sat"};
 std::vector<std::string> month = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"};
@@ -28,11 +31,14 @@ int main()
     nlohmann::json config_data;
     {
         std::ifstream input_config; input_config.open(config_file_name);
-        input_config >> config_data;
+        config_data = nlohmann::json::parse(input_config, nullptr, true, true);
     }
     std::string input = config_data["input_dir"];
     std::string output = config_data["output_dir"];
     std::vector<std::string> extensions = config_data["extensions"];
+    std::string mode = config_data["mode"];
+    if(mode != "copy" && mode != "move")
+        throw std::runtime_error("Incorrect option for mode. Available options: [copy, move]");
     size_t count = 0, duplicates = 0;
 
     for(const auto& dir_entry : std::filesystem::recursive_directory_iterator(input))
