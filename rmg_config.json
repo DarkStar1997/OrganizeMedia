@@ -1,5 +1,10 @@
 {
-    "input_dir": "/home/rohan/PlayerVisualization",
+    "input_dir": "PlayerVisualization",
     "output_dir": "roha",
-    "extensions": [".cpp", ".json", ".txt"]
+    "extensions": [".cpp", ".json", ".txt"],
+    
+    // Valid options are "copy" and "move"
+    // copy means files are copied from input_dir to output_dir while move means files are moved
+    
+    "mode": "copy"
 }

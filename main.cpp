@@ -49,12 +49,19 @@ int main()
             if(stat(dir_entry.path().string().c_str(), &result) == 0)
             {
                 auto output_path = get_output_dir(&result, std::filesystem::path(output));
+                auto output_file = output_path / dir_entry.path().filename();
                 if(!std::filesystem::exists(output_path))
                     std::filesystem::create_directories(output_path);
-                uint8_t isUnique = std::filesystem::copy_file(dir_entry.path(), output_path / dir_entry.path().filename(), std::filesystem::copy_options::skip_existing);
-                count += isUnique;
-                if(!isUnique)
+                if(std::filesystem::exists(output_file))
+                {
                     duplicates++;
+                    continue;
+                }
+                if(mode == "copy")
+                    std::filesystem::copy_file(dir_entry.path(), output_file);
+                else if(mode == "move")
+                    std::filesystem::rename(dir_entry.path(), output_file);
+                count++;
             }
         }
     }
