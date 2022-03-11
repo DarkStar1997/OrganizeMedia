@@ -88,7 +88,7 @@ int main()
                     fmt::print("Computing hash for potential duplicate output file {}\n", output_file.string());
                     std::string output_file_hash = computeHash(Chocobo1::MD5(), output_file.string());
                     if(hash_data.find(output_file_hash) == hash_data.end())
-                        hash_data.insert({output_file_hash, output_file.filename()});
+                        hash_data.insert({output_file_hash, output_file.filename().string()});
                     fmt::print("Computing hash for potential duplicate input file {}\n", dir_entry.path().string());
                     std::string input_file_hash = computeHash(Chocobo1::MD5(), dir_entry.path().string());
                     
@@ -106,7 +106,7 @@ int main()
                         duplicates++;
                         continue;
                     }
-                    hash_data.insert({input_file_hash, dir_entry.path().filename()});
+                    hash_data.insert({input_file_hash, dir_entry.path().filename().string()});
                    
                     std::string new_output_filename; int tmp_count = 1;
                     do

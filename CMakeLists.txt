@@ -7,16 +7,13 @@ if(CCACHE_PROGRAM)
 endif()
 
 if(MSVC)
-    MESSAGE("Compiler is MSVC. Sad")
     set(CMAKE_CXX_FLAGS "/MT")
 else()
-    MESSAGE("Compiler isn't MSVC. Good for you")
     set(CMAKE_CXX_FLAGS "-static")
 endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
-set(CMAKE_BUILD_TYPE "RELEASE")
 
 include(FetchContent)
 set(FETCHCONTENT_QUIET FALSE)
