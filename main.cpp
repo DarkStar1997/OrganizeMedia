@@ -12,12 +12,30 @@
 #include <exception>
 #include <md5.h>
 
-std::vector<std::string> weekday = {"sun", "mon", "tue", "wed", "thur", "fri", "sat"};
-std::vector<std::string> month = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"};
+static std::vector<std::string> month = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"};
+static std::unordered_map<std::string, std::string> hash_data; // map of [hash - filename]
 
 std::filesystem::path get_output_dir(std::tm * timestamp, const std::filesystem::path output_path)
 {
     return output_path / std::to_string(1900 + timestamp->tm_year) / month[timestamp->tm_mon] / std::to_string(timestamp->tm_mday);
+}
+
+void generate_log(const std::vector<std::string> & duplicates,
+        const std::vector<std::pair<std::string, std::string>> & renamed)
+{
+    std::ofstream rmg_log("rmg_log.txt");
+    if(duplicates.size() > 0)
+    {
+        rmg_log << fmt::format("\n\n{:=^100}\n\n", " Duplicate Files ");
+        for(size_t i = 0; i < duplicates.size(); i++)
+            rmg_log << fmt::format("{}) {}\n", i + 1, duplicates[i]);
+    }
+    if(renamed.size() > 0)
+    {
+        rmg_log << fmt::format("\n\n{:=^100}\n\n", " Renamed Files ");
+        for(size_t i = 0; i < renamed.size(); i++)
+            rmg_log << fmt::format("{}) {} renamed to {}\n", i + 1, renamed[i].first, renamed[i].second);
+    }
 }
 
 const auto computeHash = [](auto hash, const std::string &filename) -> std::string
@@ -32,23 +50,23 @@ const auto computeHash = [](auto hash, const std::string &filename) -> std::stri
         inStream->read(buf.get(), bufSize);
         hash.addData(buf.get(), inStream->gcount());
     }
-
-    //printf("%s  %s\n", hash.finalize().toString().c_str(), filename.c_str());
     return hash.finalize().toString();
 };
 
-//using file_hash = std::pair<std::string, std::string>;
-using date_dir_contents = std::unordered_map<std::string, std::string>;
-using month_dir_contents = std::array<date_dir_contents, 31>; // max 31 days
-using year_dir_contents = std::array<month_dir_contents, 12>;
-
-static std::unordered_map<std::string, std::string> hash_data; // map of [hash - filename]
-//static std::unordered_map<int, year_dir_contents> hash_contents;
-
-//void computeAndStoreHash(std::filesystem::path file, std::tm * timestamp)
-//{
-//    hash_contents[1900 + timestamp->tm_year][timestamp->tm_mon][timestamp->tm_mday][file.string()] = computeHash(Chocobo1::MD5(), file.string());
-//}
+namespace status
+{
+    void update_bar(int percent)
+    {
+        int total = 100;
+        int done = (percent / 100.0) * total;
+        fmt::print("\r[");
+        fmt::print("{:>>{}}", "", done);
+        fmt::print("{:->{}}", "", total - done);
+        fmt::print("]");
+        fmt::print(" {:>2}%", percent);
+        fflush(stdout);
+    }
+};
 
 int main()
 {
@@ -69,11 +87,23 @@ int main()
     std::string mode = config_data["mode"];
     if(mode != "copy" && mode != "move")
         throw std::runtime_error("Incorrect option for mode. Available options: [copy, move]");
+    fmt::print("Selected mode: {}\n", mode);
+    
     size_t count = 0, duplicates = 0;
+    uint64_t file_count = 0;
+    
+    fmt::print("Computing total number of potential files\n");
+    for(const auto& dir_entry : std::filesystem::recursive_directory_iterator(input))
+        if(std::filesystem::is_regular_file(dir_entry.path()) && std::find(extensions.begin(), extensions.end(), dir_entry.path().extension()) != extensions.end())
+            file_count++;
+    fmt::print("Files to be operated: {}\n", file_count);
+    
+    std::vector<std::string> duplicate_list; duplicate_list.reserve(file_count);
+    std::vector<std::pair<std::string, std::string>> renamed_list; renamed_list.reserve(file_count);
 
     for(const auto& dir_entry : std::filesystem::recursive_directory_iterator(input))
     {
-        if(std::find(extensions.begin(), extensions.end(), dir_entry.path().extension()) != extensions.end())
+        if(std::filesystem::is_regular_file(dir_entry.path()) && std::find(extensions.begin(), extensions.end(), dir_entry.path().extension()) != extensions.end())
         {
             struct stat result;
             if(stat(dir_entry.path().string().c_str(), &result) == 0)
@@ -85,25 +115,29 @@ int main()
                     std::filesystem::create_directories(output_path);
                 if(std::filesystem::exists(output_file))
                 {
-                    fmt::print("Computing hash for potential duplicate output file {}\n", output_file.string());
+                    //fmt::print("Computing hash for potential duplicate output file {}\n", output_file.string());
                     std::string output_file_hash = computeHash(Chocobo1::MD5(), output_file.string());
                     if(hash_data.find(output_file_hash) == hash_data.end())
                         hash_data.insert({output_file_hash, output_file.filename().string()});
-                    fmt::print("Computing hash for potential duplicate input file {}\n", dir_entry.path().string());
+                    //fmt::print("Computing hash for potential duplicate input file {}\n", dir_entry.path().string());
                     std::string input_file_hash = computeHash(Chocobo1::MD5(), dir_entry.path().string());
                     
                     if(input_file_hash == output_file_hash)
                     {
-                        fmt::print("{} {} are identical\n", dir_entry.path().string(), output_file.string());
+                        //fmt::print("{} {} are identical\n", dir_entry.path().string(), output_file.string());
                         duplicates++;
+                        status::update_bar(((count + duplicates) / (double)file_count) * 100.0);
+                        duplicate_list.push_back(dir_entry.path().string());
                         continue;
                     }
                     
                     auto data = hash_data.find(input_file_hash);
                     if(data != hash_data.end())
                     {
-                        fmt::print("{} with hash {} already present with filename {}\n", dir_entry.path().string(), data->first, data->second);
+                        //fmt::print("{} with hash {} already present with filename {}\n", dir_entry.path().string(), data->first, data->second);
                         duplicates++;
+                        status::update_bar(((count + duplicates) / (double)file_count) * 100.0);
+                        duplicate_list.push_back(dir_entry.path().string());
                         continue;
                     }
                     hash_data.insert({input_file_hash, dir_entry.path().filename().string()});
@@ -115,6 +149,7 @@ int main()
                         tmp_count++;
                     }while(std::filesystem::exists(output_path / std::filesystem::path(new_output_filename)));
                     output_file = output_path / std::filesystem::path(new_output_filename);
+                    renamed_list.push_back({dir_entry.path().string(), output_file.string()});
                 }
                 if(mode == "copy")
                     std::filesystem::copy_file(dir_entry.path(), output_file);
@@ -123,7 +158,11 @@ int main()
                 count++;
             }
         }
+        status::update_bar(((count + duplicates) / (double)file_count) * 100.0);
     }
 
+    fmt::print("\n");
     fmt::print("{} New files found\n {} Duplicate files\n", count, duplicates);
+    fmt::print("Generating log\n");
+    generate_log(duplicate_list, renamed_list);
 }
