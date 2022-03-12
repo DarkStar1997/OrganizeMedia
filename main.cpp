@@ -85,8 +85,8 @@ int main()
     std::string output = config_data["output_dir"];
     std::vector<std::string> extensions = config_data["extensions"];
     std::string mode = config_data["mode"];
-    if(mode != "copy" && mode != "move")
-        throw std::runtime_error("Incorrect option for mode. Available options: [copy, move]");
+    if(mode != "copy" && mode != "move" && mode != "copy&delete")
+        throw std::runtime_error("Incorrect option for mode. Available options: [copy, move, copy&delete]");
     fmt::print("Selected mode: {}\n", mode);
     
     size_t count = 0, duplicates = 0;
@@ -97,6 +97,9 @@ int main()
         if(std::filesystem::is_regular_file(dir_entry.path()) && std::find(extensions.begin(), extensions.end(), dir_entry.path().extension()) != extensions.end())
             file_count++;
     fmt::print("Files to be operated: {}\n", file_count);
+
+    if(file_count == 0)
+        exit(0);
     
     std::vector<std::string> duplicate_list; duplicate_list.reserve(file_count);
     std::vector<std::pair<std::string, std::string>> renamed_list; renamed_list.reserve(file_count);
@@ -155,6 +158,11 @@ int main()
                     std::filesystem::copy_file(dir_entry.path(), output_file);
                 else if(mode == "move")
                     std::filesystem::rename(dir_entry.path(), output_file);
+                else if(mode == "copy&delete")
+                {
+                    std::filesystem::copy_file(dir_entry.path(), output_file);
+                    std::filesystem::remove(dir_entry.path());
+                }
                 count++;
             }
         }

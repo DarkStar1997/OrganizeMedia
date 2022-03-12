@@ -1,10 +1,12 @@
 {
-    "input_dir": "PlayerVisualization",
-    "output_dir": "roha",
-    "extensions": [".cpp", ".json", ".txt"],
+    "input_dir": "/run/user/1000/gvfs/mtp:host=SAMSUNG_SAMSUNG_Android_RZ8N906GZPH/Phone/SendAnywhere",
+    "output_dir": "/run/media/rohan/Media/Photos",
+    "extensions": [".JPG", ".jpeg"],
     
-    // Valid options are "copy" and "move"
-    // copy means files are copied from input_dir to output_dir while move means files are moved
+    // Valid options are "copy", "move", "copy&delete"
+    // copy means files are copied from input_dir to output_dir 
+    // move means files are moved
+    // copy&delete means the file is copied from input_dir and then deleted; this mode is a fallback to be selected when move fails
     
     "mode": "copy"
 }
