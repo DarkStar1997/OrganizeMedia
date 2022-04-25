@@ -57,7 +57,7 @@ jobs:
       id: build
       run: |
         cmake --build --preset lin-${{ matrix.compiler }}-${{ matrix.build_type }}
-        zip -r output_linux_${{ matrix.compiler }}.zip build/lin-${{ matrix.compiler }}-${{ matrix.build_type }}/RandomTests
+        zip -r output_linux_${{ matrix.compiler }}.zip build/lin-${{ matrix.compiler }}-${{ matrix.build_type }}
 
     - name: Save release asset
       id: save_release_asset
@@ -97,7 +97,7 @@ jobs:
       id: build
       run: |
         cmake --build --preset osx-${{ matrix.compiler }}-${{ matrix.build_type }}
-        zip -r output_macos_${{ matrix.compiler }}.zip build/osx-${{ matrix.compiler }}-${{ matrix.build_type }}/RandomTests
+        zip -r output_macos_${{ matrix.compiler }}.zip build/osx-${{ matrix.compiler }}-${{ matrix.build_type }}
 
     - name: Save release asset
       id: save_release_asset
