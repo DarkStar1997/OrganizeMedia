@@ -8,7 +8,7 @@ endif()
 
 if(MSVC)
     set(CMAKE_CXX_FLAGS "/MT")
-else()
+elseif(UNIX AND NOT APPLE)
     set(CMAKE_CXX_FLAGS "-static")
 endif()
 
