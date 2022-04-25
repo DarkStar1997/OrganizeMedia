@@ -34,7 +34,7 @@ jobs:
     strategy:
       matrix:
         compiler: [gcc, clang]
-        build_type: [dbg, rel]
+        build_type: [rel]
         include:
           - compiler: gcc
             dependencies: 'ninja-build'
@@ -74,7 +74,7 @@ jobs:
     strategy:
       matrix:
         compiler: [gcc, clang]
-        build_type: [dbg, rel]
+        build_type: [rel]
         include:
           - compiler: gcc
             dependencies: 'gcc ninja'
@@ -114,7 +114,7 @@ jobs:
     strategy:
       matrix:
         compiler: [msvc]
-        build_type: [dbg, rel]
+        build_type: [rel]
         include:
           - compiler: msvc
             dependencies: 'ninja'
@@ -136,7 +136,7 @@ jobs:
       id: build
       run: |
         cmake --build --preset win-${{ matrix.compiler }}-${{ matrix.build_type }}
-        Compress-Archive -Path build\win-${{ matrix.compiler }}-${{ matrix.build_type }}\RandomTests -DestinationPath output_windows_${{ matrix.compiler }}
+        Compress-Archive -Path build\win-${{ matrix.compiler }}-${{ matrix.build_type }} -DestinationPath output_windows_${{ matrix.compiler }}
 
     - name: Save release asset
       id: save_release_asset
