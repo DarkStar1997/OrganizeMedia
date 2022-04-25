@@ -118,16 +118,13 @@ int main()
                     std::filesystem::create_directories(output_path);
                 if(std::filesystem::exists(output_file))
                 {
-                    //fmt::print("Computing hash for potential duplicate output file {}\n", output_file.string());
                     std::string output_file_hash = computeHash(Chocobo1::MD5(), output_file.string());
                     if(hash_data.find(output_file_hash) == hash_data.end())
                         hash_data.insert({output_file_hash, output_file.filename().string()});
-                    //fmt::print("Computing hash for potential duplicate input file {}\n", dir_entry.path().string());
                     std::string input_file_hash = computeHash(Chocobo1::MD5(), dir_entry.path().string());
                     
                     if(input_file_hash == output_file_hash)
                     {
-                        //fmt::print("{} {} are identical\n", dir_entry.path().string(), output_file.string());
                         duplicates++;
                         status::update_bar(((count + duplicates) / (double)file_count) * 100.0);
                         duplicate_list.push_back(dir_entry.path().string());
@@ -137,7 +134,6 @@ int main()
                     auto data = hash_data.find(input_file_hash);
                     if(data != hash_data.end())
                     {
-                        //fmt::print("{} with hash {} already present with filename {}\n", dir_entry.path().string(), data->first, data->second);
                         duplicates++;
                         status::update_bar(((count + duplicates) / (double)file_count) * 100.0);
                         duplicate_list.push_back(dir_entry.path().string());
