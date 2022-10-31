@@ -4,10 +4,16 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 #include <vector>
+#include "imspinner.h"
+
+#define IM_CLAMP(V, MN, MX)     ((V) < (MN) ? (MN) : (V) > (MX) ? (MX) : (V))
 
 static bool source_button_val = false;
 static bool dest_button_val = false;
 static char other_filters[256];
+static bool start_button_val = false;
+static double x_offset = 0;
+static bool organize_button_val = false;
 
 static void HelpMarker(const char* desc)
 {
@@ -22,45 +28,38 @@ static void HelpMarker(const char* desc)
     }
 }
 
-void Renderer::RenderUI()
+void Renderer::ShowStartingOptions()
 {
-    ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
-
-    ImGui::Begin("Media Organizer");
-
-    ImGui::Dummy(ImVec2(0.0f, 5.0f));
-    ImGui::Text("\tA Tool To Organize Your Media Effortlessly");
-
-    ImGui::Dummy(ImVec2(0.0f, 5.0f)); ImGui::Dummy(ImVec2(0.0f, 20.0f));
-    ImGui::Separator();
-    ImGui::Dummy(ImVec2(0.0f, 5.0f)); ImGui::Dummy(ImVec2(0.0f, 20.0f));
-
+    ImGui::SetCursorPosX(x_offset);
     if (ImGui::RadioButton("Copy", selected_mode == Mode::Mode_COPY)) { selected_mode = Mode::Mode_COPY; }
     ImGui::SameLine(); HelpMarker("Copy files after organizing from source to destination");
 
+    ImGui::SetCursorPosX(x_offset);
     if (ImGui::RadioButton("Move", selected_mode == Mode::Mode_MOVE)) { selected_mode = Mode::Mode_MOVE; }
     ImGui::SameLine(); HelpMarker("Move files after organizing from source to destination");
 
+    ImGui::SetCursorPosX(x_offset);
     if (ImGui::RadioButton("Copy then Delete", selected_mode == Mode::Mode_COPY_AND_DELETE)) { selected_mode = Mode::Mode_COPY_AND_DELETE; }
     ImGui::SameLine(); HelpMarker("Copy files after organizing from source to destination. Then delete the source files.");
 
     ImGui::Dummy(ImVec2(0.0f, 10.0f));
 
-    ImGui::Checkbox(".png", (bool *)&ext_checkboxes[0]);
-    ImGui::Checkbox(".jpg", (bool *)&ext_checkboxes[1]);
-    ImGui::Checkbox(".jpeg", (bool *)&ext_checkboxes[2]);
-    ImGui::Checkbox(".mp4", (bool *)&ext_checkboxes[3]);
-    ImGui::Checkbox(".avi", (bool *)&ext_checkboxes[4]);
-    ImGui::Checkbox("others", (bool *)&ext_checkboxes[5]);
+    for(size_t index = 0; index < checkbox_labels.size(); index++) {
+        ImGui::SetCursorPosX(x_offset);
+        ImGui::Checkbox(checkbox_labels[index].c_str(), (bool *)&ext_checkboxes[index]);
+    }
+
     ImGui::SameLine();
     HelpMarker("Enter comma separated filters like: mp4,avi,jpg,jpeg,png");
 
-    if(ext_checkboxes[5]) {
+    if(ext_checkboxes.back()) {
+        ImGui::SetCursorPosX(x_offset);
         ImGui::InputText("other extensions", &other_filters[0], IM_ARRAYSIZE(other_filters));
         other_filters_str = other_filters;
     }
 
     ImGui::Dummy(ImVec2(0.0f, 5.0f)); ImGui::Dummy(ImVec2(0.0f, 20.0f));
+    ImGui::SetCursorPosX(x_offset);
     source_button_val = ImGui::Button("Select Source");
 
     if(source_button_val)
@@ -73,6 +72,7 @@ void Renderer::RenderUI()
     }
 
     ImGui::Dummy(ImVec2(0.0f, 20.0f));
+    ImGui::SetCursorPosX(x_offset);
     dest_button_val = ImGui::Button("Select Destination");
 
     if(dest_button_val)
@@ -82,6 +82,63 @@ void Renderer::RenderUI()
     {
         ImGui::SameLine();
         ImGui::Text("Destination: %s", dest_path.string().c_str());
+    }
+
+    ImGui::Dummy(ImVec2(0.0f, 5.0f)); ImGui::Dummy(ImVec2(0.0f, 20.0f));
+    ImGui::SetCursorPosX(x_offset);
+    start_button_val = ImGui::Button("Start");
+    ImGui::Dummy(ImVec2(0.0f, 5.0f)); ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
+    if(start_button_val)
+        state |= COMPUTING_FILES;
+}
+
+void Renderer::RenderUI()
+{
+    x_offset = ImGui::GetWindowSize().x / 10.0f;
+    ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+
+    ImGui::Begin("Media Organizer");
+
+    ImGui::Dummy(ImVec2(0.0f, 5.0f));
+    {
+        std::string message = "A Tool To Organize Your Media Effortlessly";
+        ImGui::SetCursorPosX((ImGui::GetWindowSize().x - message.size()) / 3);
+        ImGui::Text(message.c_str());
+    }
+
+    ImGui::Dummy(ImVec2(0.0f, 5.0f)); ImGui::Dummy(ImVec2(0.0f, 20.0f));
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0.0f, 5.0f)); ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
+    if(state & TAKING_INPUT)
+        ShowStartingOptions();
+
+    if(state & COMPUTING_FILES) {
+        ImGui::SetCursorPosX(x_offset);
+        ImSpinner::SpinnerTwinAng360("SpinnerTwinAng360", 16, 11, 4, ImColor(255, 255, 255), ImColor(255, 0, 0), 4);
+        ImGui::SameLine();
+        ImGui::Text("Computing number of potential files");
+        ImGui::Dummy(ImVec2(0.0f, 10.0f));
+        ImGui::SetCursorPosX(x_offset);
+        organize_button_val = ImGui::Button("Organize");
+        if(organize_button_val) {
+            state = state & ~COMPUTING_FILES;
+            state |= ORGANIZING;
+        }
+    }
+
+    if(state & ORGANIZING) {
+        static float progress = 0.0f, progress_dir = 1.0f;
+        progress += progress_dir * 0.4f * ImGui::GetIO().DeltaTime;
+        if (progress >= +1.1f) { progress = +1.1f; progress_dir *= -1.0f; }
+        if (progress <= -0.1f) { progress = -0.1f; progress_dir *= -1.0f; }
+
+        ImGui::SetCursorPosX(x_offset);
+        ImGui::Text("Computed 1000 potential new files");
+        ImGui::SetCursorPosX(x_offset);
+        ImGui::ProgressBar(progress, ImVec2(0.0f, 0.0f));
+
     }
 
     ImGui::End();
