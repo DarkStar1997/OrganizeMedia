@@ -17,6 +17,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 include(FetchContent)
 set(FETCHCONTENT_QUIET FALSE)
+get_filename_component(fc_cache "../.fetchcontent_cache"
+    REALPATH BASE_DIR "${CMAKE_BINARY_DIR}")
+set(FETCHCONTENT_BASE_DIR ${fc_cache})
 
 FetchContent_Declare(
     fmtlib
