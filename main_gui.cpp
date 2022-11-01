@@ -62,7 +62,7 @@ int main() {
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     Renderer renderer;
-    //std::thread runner([&sim](){sim.run_ecosystem_simulation();});
+    std::thread runner([&renderer](){renderer.run();});
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -73,7 +73,6 @@ int main() {
         ImGui::NewFrame();
 
         renderer.RenderUI();
-        //sim.RenderUI();
 
         // Rendering
         ImGui::Render();
@@ -104,8 +103,9 @@ int main() {
     glfwDestroyWindow(window);
     glfwTerminate();
 
-    std::cout << renderer.other_filters_str << '\n';
-
-    //runner.join();
+    renderer.state = State::ABORT;
+    renderer.renderer_lock.unlock();
+    renderer.cond.notify_one();
+    runner.join();
     return 0;
 }
