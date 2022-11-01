@@ -252,7 +252,7 @@ void Renderer::run() {
                     if(input_file_hash == output_file_hash)
                     {
                         duplicates++;
-                        organizing_progress = ((count + duplicates) / (float)computed_file_count) * 100;
+                        organizing_progress = ((count + duplicates) / (float)computed_file_count);
                         duplicate_list.push_back(dir_entry.path().string());
                         continue;
                     }
@@ -261,7 +261,7 @@ void Renderer::run() {
                     if(data != hash_data.end())
                     {
                         duplicates++;
-                        organizing_progress = ((count + duplicates) / (float)computed_file_count) * 100;
+                        organizing_progress = ((count + duplicates) / (float)computed_file_count);
                         duplicate_list.push_back(dir_entry.path().string());
                         continue;
                     }
@@ -288,7 +288,7 @@ void Renderer::run() {
                 count++;
             }
         }
-        organizing_progress = ((count + duplicates) / (float)computed_file_count) * 100;
+        organizing_progress = ((count + duplicates) / (float)computed_file_count);
     }
     new_files_count = count;
     generate_log(duplicate_list, renamed_list);

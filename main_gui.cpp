@@ -102,10 +102,12 @@ int main() {
     ImGui::DestroyContext();
     glfwDestroyWindow(window);
     glfwTerminate();
-
+    if(renderer.state == State::TAKING_INPUT)
+    {
+        renderer.renderer_lock.unlock();
+        renderer.cond.notify_one();
+    }
     renderer.state = State::ABORT;
-    renderer.renderer_lock.unlock();
-    renderer.cond.notify_one();
     runner.join();
     return 0;
 }
