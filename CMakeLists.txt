@@ -107,3 +107,10 @@ if(UNIX)
 elseif(WIN32)
     target_link_libraries(run PRIVATE glfw OpenGL::GL fmt::fmt nfd)
 endif()
+
+add_custom_target(copy_fonts
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_CURRENT_LIST_DIR}/fonts/OpenSans-Regular.ttf
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
+add_dependencies(run copy_fonts)

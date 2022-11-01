@@ -40,7 +40,7 @@ int main() {
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     //std::filesystem::path font_file = helper::ecosystem_root / "simulation" / "run" / "fonts" / "Open_Sans" / "static" / "OpenSans" / "OpenSans-Regular.ttf";
-    //io.Fonts->AddFontFromFileTTF(font_file.string().c_str(), 18);
+    io.Fonts->AddFontFromFileTTF("OpenSans-Regular.ttf", 18);
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
