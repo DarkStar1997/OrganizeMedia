@@ -187,9 +187,8 @@ std::filesystem::path Renderer::get_selected_path() {
     if (result == NFD_OKAY)
     {
         fmt::print("Success!\n");
-        fmt::print("{}\n", outPath);
         selectedPath = outPath;
-        NFD_FreePath(outPath);
+        NFD_FreePath((nfdu8char_t *)outPath);
     }
     else if (result == NFD_CANCEL)
     {
@@ -213,7 +212,7 @@ void Renderer::run() {
         return;
 
     for(const auto& dir_entry : std::filesystem::recursive_directory_iterator(source_path))
-        if(state != State::ABORT && std::filesystem::is_regular_file(dir_entry.path()) && extensions.find(dir_entry.path().extension()) != extensions.end())
+        if(state != State::ABORT && std::filesystem::is_regular_file(dir_entry.path()) && extensions.find(dir_entry.path().extension().string()) != extensions.end())
             computed_file_count++;
 
     if(computed_file_count == 0) {
