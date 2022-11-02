@@ -186,13 +186,11 @@ std::filesystem::path Renderer::get_selected_path() {
     nfdresult_t result = NFD_PickFolderN(&outPath, default_path);
     if (result == NFD_OKAY)
     {
-        fmt::print("Success!\n");
         selectedPath = outPath;
         NFD_FreePath((nfdu8char_t *)outPath);
     }
-    else if (result == NFD_CANCEL)
+    else if (result == NFD_CANCEL) // user pressed cancel
     {
-        fmt::print("User pressed cancel.\n");
     }
     else
     {

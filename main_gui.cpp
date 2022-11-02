@@ -28,8 +28,6 @@ int main() {
     float resolution_y = mode->height;
     float scale = 0.5;
 
-    fmt::print("Detected current resolution: {}x{}\n", resolution_x, resolution_y);
-
     GLFWwindow* window = glfwCreateWindow(resolution_x * scale, resolution_y * scale, "Ecosystem Simulation", NULL, NULL);
     if (window == NULL)
         return 1;
