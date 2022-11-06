@@ -104,6 +104,22 @@ void Renderer::ShowStartingOptions()
     }
 
     ImGui::Dummy(ImVec2(0.0f, 5.0f)); ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
+    ImGui::SetCursorPosX(x_offset);
+    ImGui::Text("Organization Level");
+    ImGui::SetCursorPosX(x_offset);
+
+    if (ImGui::RadioButton("Year", selected_org_level == OrgLevel::YEAR)) { selected_org_level = OrgLevel::YEAR; }
+    ImGui::SameLine(); HelpMarker("Organize by Year"); ImGui::SameLine();
+
+    if (ImGui::RadioButton("Month", selected_org_level == OrgLevel::MONTH)) { selected_org_level = OrgLevel::MONTH; }
+    ImGui::SameLine(); HelpMarker("Organize by Month"); ImGui::SameLine();
+
+    if (ImGui::RadioButton("Day", selected_org_level == OrgLevel::DATE)) { selected_org_level = OrgLevel::DATE; }
+    ImGui::SameLine(); HelpMarker("Organize by Date");
+
+    ImGui::Dummy(ImVec2(0.0f, 5.0f)); ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
     ImGui::SetCursorPosX(x_offset);
     start_button_val = ImGui::Button("Start");
     ImGui::Dummy(ImVec2(0.0f, 5.0f)); ImGui::Dummy(ImVec2(0.0f, 20.0f));
@@ -316,7 +332,12 @@ void Renderer::update_extensions() {
 
 std::filesystem::path Renderer::get_output_dir(std::tm * timestamp, const std::filesystem::path output_path)
 {
-    return output_path / std::to_string(1900 + timestamp->tm_year) / month[timestamp->tm_mon] / std::to_string(timestamp->tm_mday);
+    if(selected_org_level == OrgLevel::YEAR)
+        return output_path / std::to_string(1900 + timestamp->tm_year);
+    else if(selected_org_level == OrgLevel::MONTH)
+        return output_path / std::to_string(1900 + timestamp->tm_year) / month[timestamp->tm_mon];
+    else // selected_org_level == OrgLevel::DATE
+        return output_path / std::to_string(1900 + timestamp->tm_year) / month[timestamp->tm_mon] / std::to_string(timestamp->tm_mday);
 }
 
 void Renderer::generate_log(const std::vector<std::string> & duplicates,

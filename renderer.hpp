@@ -21,6 +21,12 @@ enum class State {
     ABORT
 };
 
+enum class OrgLevel {
+    YEAR,
+    MONTH,
+    DATE
+};
+
 struct Renderer {
 
     Renderer()
@@ -29,6 +35,7 @@ struct Renderer {
         ext_checkboxes = std::vector<uint8_t>(checkbox_labels.size(), 0);
         selected_mode = Mode::Mode_COPY;
         state = State::TAKING_INPUT;
+        selected_org_level = OrgLevel::DATE;
         renderer_lock = std::unique_lock<std::mutex>(mu);
         computed_file_count = 0;
         new_files_count = 0;
@@ -46,6 +53,7 @@ struct Renderer {
 
     Mode selected_mode;
     State state;
+    OrgLevel selected_org_level;
     std::vector<uint8_t> ext_checkboxes;
     std::vector<std::string> checkbox_labels;
     std::unordered_set<std::string> extensions;
