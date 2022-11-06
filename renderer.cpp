@@ -332,14 +332,12 @@ void Renderer::update_extensions() {
 
 std::filesystem::path Renderer::get_output_dir(std::tm * timestamp, const std::filesystem::path output_path)
 {
-    std::filesystem::path return_path = output_path;
-    if(selected_org_level >= OrgLevel::YEAR)
-        return_path = return_path / std::to_string(1900 + timestamp->tm_year);
-    if(selected_org_level >= OrgLevel::MONTH)
-        return_path = return_path / month[timestamp->tm_mon];
-    if(selected_org_level >= OrgLevel::DATE)
-        return_path = return_path / std::to_string(timestamp->tm_mday);
-    return return_path;
+    if(selected_org_level == OrgLevel::YEAR)
+        return output_path / std::to_string(1900 + timestamp->tm_year);
+    else if(selected_org_level == OrgLevel::MONTH)
+        return output_path / std::to_string(1900 + timestamp->tm_year) / month[timestamp->tm_mon];
+    else // selected_org_level == OrgLevel::DATE
+        return output_path / std::to_string(1900 + timestamp->tm_year) / month[timestamp->tm_mon] / std::to_string(timestamp->tm_mday);
 }
 
 void Renderer::generate_log(const std::vector<std::string> & duplicates,
