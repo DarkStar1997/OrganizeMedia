@@ -37,9 +37,9 @@ jobs:
         build_type: [rel]
         include:
           - compiler: gcc
-            dependencies: 'ninja-build'
+            dependencies: 'ninja-build libgtk-3-dev'
           - compiler: clang
-            dependencies: 'ninja-build clang-12'
+            dependencies: 'ninja-build libgtk-3-dev clang-12'
     steps:
     - uses: actions/checkout@v2
 
